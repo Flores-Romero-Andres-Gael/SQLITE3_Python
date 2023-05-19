@@ -22,7 +22,7 @@ existe = c.fetchone()
 if existe is not None:
     print("La tabla (Datos) ya existe")
 else:
-    c.execute('''CREATE TABLE IF NOT EXISTS Datos(Nombre text, ApePa text, ApeMa text, Correo text, Numero text, Leer text, Musica text, Videojuegos text,Obligacion text, Estado text)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS Datos(ID INTEGER PRIMARY KEY, Nombre text, ApePa text, ApeMa text, Correo text, Numero text, Leer text, Musica text, Videojuegos text,Obligacion text, Estado text)''')
     print("La tabla (Datos) se ha creado")
 
 conexion.commit()
@@ -43,10 +43,14 @@ def BorrarContenido():
     VideoJuegos.set(False)
     Obligacion.set(None)
 
-def guardar_datos():
+def guardar_datosBSD():
 
     conexion = sqlite3.connect('Listas.db')
     c = conexion.cursor()
+
+    c.execute('''SELECT COUNT (*) FROM Datos''')
+    ID = c.fetchone()[0]
+    ID = ID + 1
 
     Nombre = nombreVar.get()
     APaterno = APaternoVar.get()
@@ -62,12 +66,36 @@ def guardar_datos():
     if not Nombre or not APaterno or not AMaterno or not Correo or not Numero or not LeerOp or not MusicaOp or not VideoJuegosOp or not Obli or not SelecEstados:
         messagebox.showinfo("ERROR", "Las casillas deben estar llenas para guardar.")
     else:
-        NuevosDatos = [(Nombre, APaterno, AMaterno, Correo, Numero, LeerOp, MusicaOp, VideoJuegosOp,Obli, SelecEstados)]
-        c.executemany ('INSERT INTO Datos VALUES (?,?,?,?,?,?,?,?,?,?)', NuevosDatos)
+        NuevosDatos = [(ID,Nombre, APaterno, AMaterno, Correo, Numero, LeerOp, MusicaOp, VideoJuegosOp,Obli, SelecEstados)]
+        c.executemany ('INSERT INTO Datos VALUES (?,?,?,?,?,?,?,?,?,?,?)', NuevosDatos)
         conexion.commit()
         BorrarContenido()
-        TablaDatos.insert(parent="", index="end", iid=random.randint(0,1000), text=random.randint(0,1000), values=(Nombre, APaterno, AMaterno, Correo, Numero, LeerOp, MusicaOp, VideoJuegosOp,Obli,SelecEstados))
         conexion.close()
+
+def guardar_datosCSV():
+
+    with open("Listas2.csv", "r") as file:
+        file.readlines
+    
+    Nombre = nombreVar.get()
+    APaterno = APaternoVar.get()
+    AMaterno = AMaternoVar.get()
+    Correo = CorreoVar.get()
+    Numero = NumeroMovilVar.get()
+    SelecEstados = Estados.get()
+    LeerOp = "Si" if Leer.get() == True else "No"
+    MusicaOp = "Si" if Musica.get() == True else "No"
+    VideoJuegosOp = "Si" if VideoJuegos.get() == True else "No"
+    Obli = Obligacion.get()
+
+    if not Nombre or not APaterno or not AMaterno or not Correo or not Numero or not LeerOp or not MusicaOp or not VideoJuegosOp or not Obli or not SelecEstados:
+        messagebox.showinfo("ERROR", "Las casillas deben estar llenas para guardar.")
+    else:
+        with open("Listas2.csv","a") as file:
+            file.write(f'{Nombre},{APaterno},{AMaterno},{Correo},{Numero},{LeerOp},{MusicaOp},{VideoJuegosOp},{Obli},{SelecEstados}\n') 
+        BorrarContenido()
+        TablaDatos.insert(parent="", index="end", iid=random.randint(0,1000), text=random.randint(0,1000), values=(Nombre, APaterno, AMaterno, Correo, Numero, LeerOp, MusicaOp, VideoJuegosOp,Obli,SelecEstados))
+
 
 #---------------------------------PADRE--------------------------------------
 
@@ -85,11 +113,11 @@ FrameInicial = ttk.Frame(mainFrame)
 FrameInicial.grid(column=0,row=0)
 
 #Lado izquierdo Inicial
-Izquierda = ttk.Frame(FrameInicial, relief="raised", width= 20, height= 20)
+Izquierda = ttk.Frame(FrameInicial, relief="raised", width= 30, height= 20)
 Izquierda.grid(column=0, row=0, sticky=(W), padx=10, pady=10)
 
 #Lado Derecho Inicial
-Derecha = ttk.Frame(FrameInicial, relief="raised", width= 20, height= 20)
+Derecha = ttk.Frame(FrameInicial, relief="raised", width= 30, height= 20)
 Derecha.grid(column=1, row=0, sticky=(W), padx=10, pady=10)
 
 #Frames Izquierda
@@ -149,8 +177,11 @@ CheckVJ = ttk.Checkbutton(FrameDatos2, text="Videojuegos", variable=VideoJuegos,
 
 #----------------------------------Frame Izquierda 3-------------------------------------
 
-ttk.Button(FrameDatos3, text="Guardar", command=guardar_datos).grid(column=0, row=0, sticky=(E))
-ttk.Button(FrameDatos3, text="Borrar", command=BorrarContenido).grid(column=1, row=0,sticky=(E))
+ttk.Button(FrameDatos3, text="Guardar", command=guardar_datosCSV).grid(column=0, row=0, sticky=(E))
+ttk.Label(FrameDatos3, text="En Archivo CSV",).grid(column=0, row=1, sticky=(E))
+ttk.Button(FrameDatos3, text="Guardar", command=guardar_datosBSD).grid(column=1, row=0, sticky=(E))
+ttk.Label(FrameDatos3, text="En Archivo BSD",).grid(column=1, row=1, sticky=(E))
+ttk.Button(FrameDatos3, text="Borrar", command=BorrarContenido).grid(column=2, row=0,sticky=(E))
 
 #----------------------------------Frame Derecha 1-------------------------------------
 
